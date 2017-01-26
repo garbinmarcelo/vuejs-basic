@@ -1,0 +1,20 @@
+{
+  "name": "basic_vuejs",
+  "version": "1.0.0",
+  "description": "vue.js v2 - basic example",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Marcelo Garbin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marcelogarbin/vuejs-basic.git"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "numeral": "^2.0.4",
+    "sweetalert2": "^6.3.2",
+    "vue": "^2.1.10"
+  }
+}
