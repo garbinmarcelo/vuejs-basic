@@ -39,19 +39,19 @@ h1>small{
     vertical-align: middle;
 }
 
-.checkbox{
+table .checkbox{
     padding: 0px;
     margin: 0px;
 }
-.checkbox label{
+table .checkbox label{
     min-width: 115px;
     padding: 5px;
     margin: 0px;
 }
-.checkbox input[type=checkbox],
-.checkbox-inline input[type=checkbox],
-.radio input[type=radio],
-.radio-inline input[type=radio]{
+.table .checkbox input[type=checkbox],
+.table .checkbox-inline input[type=checkbox],
+.table .radio input[type=radio],
+.table .radio-inline input[type=radio]{
     display: block;
     margin: 4px 0px 0px 0px;
     float: left;
