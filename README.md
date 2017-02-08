@@ -12,3 +12,17 @@
 npm install
 ```
 
+---
+
+:: Change Log
+
+- v2.0.0
+
+   * Single Page Application
+   * vue-router 2 (https://router.vuejs.org/en/)
+   
+
+- v1.0.0
+
+   * Basic Concepts
+   * Web Components
