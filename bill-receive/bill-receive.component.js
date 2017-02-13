@@ -1,3 +1,5 @@
+var eventHub = new Vue();
+
 window.billReceiveComponent = Vue.extend({
     components: {
         'menu-component': billReceiveMenuComponent
@@ -7,6 +9,7 @@ window.billReceiveComponent = Vue.extend({
         <div class="col-md-12">
             <h1>
                 {{ title }}
+                <small :class="{'text-danger': total > 0 }">({{ total | currency }})</small>
                 <small v-html="this.$options.filters.statusGeneral(status, 'receive')" class="alert pull-right"
                        :class="{
                        'well well-sm alert alert-default text-muted': status === false,
@@ -24,14 +27,21 @@ window.billReceiveComponent = Vue.extend({
     `,
     data: function() {
         return {
-            title: 'Contas a Receber'
+            title: 'Contas a Receber',
+            status: false,
+            total: 0
         };
     },
-    computed: {
-        status: function () {
-            var bills = this.$root.$children[0].billsReceive;
+    created: function() {
+        eventHub.$on('change-info', this.updateStatus);
+        eventHub.$on('change-info', this.updateTotal);
+        this.updateStatus();
+        this.updateTotal();
+    },
+    methods: {
+        calculateStatus: function (bills) {
             if(!bills.length){
-                return false;
+                this.status = false;
             }
 
             var count = 0;
@@ -40,7 +50,19 @@ window.billReceiveComponent = Vue.extend({
                     count++;
                 }
             }
-            return count;
+            this.status = count;
         },
+        updateStatus: function () {
+            var self = this;
+            BillReceive.query().then(function (response) {
+                self.calculateStatus(response.data);
+            });
+        },
+        updateTotal: function () {
+            var self = this;
+            BillReceive.total().then(function (response) {
+                self.total = response.data.total;
+            });
+        }
     }
 });

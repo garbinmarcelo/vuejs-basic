@@ -1,3 +1,5 @@
+var eventHub = new Vue();
+
 window.billPayComponent = Vue.extend({
     components: {
         'menu-component': billPayMenuComponent
@@ -7,6 +9,7 @@ window.billPayComponent = Vue.extend({
         <div class="col-md-12">
             <h1>
                 {{ title }}
+                <small :class="{'text-danger': total > 0 }">({{ total | currency }})</small>
                 <small v-html="this.$options.filters.statusGeneral(status, 'pay')" class="alert pull-right"
                        :class="{
                        'well well-sm alert alert-default text-muted': status === false,
@@ -24,14 +27,21 @@ window.billPayComponent = Vue.extend({
     `,
     data: function() {
         return {
-            title: 'Contas a Pagar'
+            title: 'Contas a Pagar',
+            status: false,
+            total: 0
         };
     },
-    computed: {
-        status: function () {
-            var bills = this.$root.$children[0].billsPay;
+    created: function() {
+        eventHub.$on('change-info', this.updateStatus);
+        eventHub.$on('change-info', this.updateTotal);
+        this.updateStatus();
+        this.updateTotal();
+    },
+    methods: {
+        calculateStatus: function (bills) {
             if(!bills.length){
-                return false;
+                this.status = false;
             }
 
             var count = 0;
@@ -40,7 +50,19 @@ window.billPayComponent = Vue.extend({
                     count++;
                 }
             }
-            return count;
+            this.status = count;
         },
+        updateStatus: function () {
+            var self = this;
+            BillPay.query().then(function (response) {
+                self.calculateStatus(response.data);
+            });
+        },
+        updateTotal: function () {
+            var self = this;
+            BillPay.total().then(function (response) {
+                self.total = response.data.total;
+            });
+        }
     }
 });

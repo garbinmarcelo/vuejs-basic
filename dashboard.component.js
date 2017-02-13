@@ -36,9 +36,18 @@ window.dashboardComponent = Vue.extend({
     `,
     data: function () {
         return {
-            billsReceive: this.$root.$children[0].billsReceive,
-            billsPay: this.$root.$children[0].billsPay
+            billsReceive: 0,
+            billsPay: 0
         };
+    },
+    created: function () {
+        var self = this;
+        BillPay.query().then(function (response) {
+            self.billsPay = response.data;
+        });
+        BillReceive.query().then(function (response) {
+            self.billsReceive = response.data;
+        });
     },
     methods:{
         billsTotal: function (bills, positive = true) {

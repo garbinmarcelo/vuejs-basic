@@ -4,6 +4,7 @@ window.billPayListComponent = Vue.extend({
         <thead>
             <tr>
                 <th class="text-center">#</th>
+                <th class="text-center">Código</th>
                 <th class="text-center">Vencimento</th>
                 <th class="text-center">Nome</th>
                 <th class="text-center">Valor</th>
@@ -13,48 +14,62 @@ window.billPayListComponent = Vue.extend({
         </thead>
         <tbody>
             <tr v-if="billsCount === 0">
-                <td colspan="6" class="text-center text-muted">Nenhuma conta cadastrada</td>
+                <td colspan="7" class="text-center text-muted">Nenhuma conta cadastrada</td>
             </tr>
             <tr v-else v-for="(o, index) in bills">
                 <td class="text-center">{{ index + 1 }}</td>
+                <td class="text-center">{{ o.id }}</td>
                 <td class="text-center">{{ o.date_due }}</td>
                 <td class="text-center">{{ o.name }}</td>
                 <td class="text-center">{{ o.value | currency('pt-br') }}</td>
                 <td width="180" class="text-center">
                     <div class="checkbox" :class="{'text-success': o.done, 'text-danger': !o.done}">
                         <label>
-                            <input type="checkbox" v-model="o.done"> {{ o.done | doneLabel }}
+                            <input type="checkbox" v-model="o.done" @click="doneBill(o)"> {{ o.done | doneLabel }}
                         </label>
                     </div>
                 </td>
                 <td width="180" class="text-center">
-                    <router-link :to="{ name: 'bill-pay.update', params: {index: index} }" class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> Editar</router-link>
-                    <a href="#" class="btn btn-sm btn-danger" @click.prevent="delBill(index)"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Deletar</a>
+                    <router-link :to="{ name: 'bill-pay.update', params: {id: o.id} }" class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> Editar</router-link>
+                    <a href="#" class="btn btn-sm btn-danger" @click.prevent="delBill(o, index)"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Deletar</a>
                 </td>
             </tr>
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="6" class="text-right"><small>Total de Contas: {{ billsCount }}</small></td>
+                <td colspan="7" class="text-right"><small>Total de Contas: {{ billsCount() }}</small></td>
             </tr>
         </tfoot>
     </table>
     `,
     data: function () {
         return {
-            bills: this.$root.$children[0].billsPay
+            bills: [],
+            totalBills: 0
         };
     },
-    computed: {
-        billsCount: function(){
-            var bills = this.$root.$children[0].billsPay.length;
-            return bills;
-        }
+    created: function () {
+        eventHub.$emit('change-info');
+        var self = this;
+        BillPay.query().then(function (response) {
+            self.bills = response.data;
+        });
     },
     methods: {
-        delBill: function (index) {
-            var bills = this.$root.$children[0].billsPay;
-
+        billsCount: function(){
+            var self = this;
+            BillPay.query().then(function (response) {
+                self.totalBills = response.data.length;
+            });
+            return self.totalBills;
+        },
+        doneBill: function (bill) {
+            BillPay.update({id: bill.id}, bill).then(function (response) {
+                eventHub.$emit('change-info');
+            });
+        },
+        delBill: function (bill, index) {
+            var self = this;
             swal({
              title: 'Tem certeza?',
              text: "Você não será capaz de reverter isso!",
@@ -65,19 +80,16 @@ window.billPayListComponent = Vue.extend({
              cancelButtonColor: '#d33',
              confirmButtonText: 'Sim, Deletar registro!'
              }).then(function () {
-                 if(bills.splice(index, 1).length){
-                     swal(
-                         'Deletado!',
-                         'Registro deletado com sucesso.',
-                         'success'
-                     );
-                 }else{
-                     swal(
-                         'Erro!',
-                         'Não foi possível deletar o registro.',
-                         'error'
-                     );
-                 }
+                BillPay.delete({id: bill.id}).then(function (response) {
+                    self.bills.splice(index, 1);
+                    self.billsCount();
+                    eventHub.$emit('change-info');
+                    swal(
+                        'Deletado!',
+                        'Registro deletado com sucesso.',
+                        'success'
+                    );
+                });
              }).catch(swal.noop);
         }
     }
